@@ -86,7 +86,7 @@ def measurement_update(lk, rk, bk, P_check, x_check):
 	
     return x_check, P_check
 
- # 1. Updating state with odometry readings 
+# 1. Updating state with odometry readings 
 x_check[2] = wraptopi(x_check[2])
 F = np.array([[np.cos(x_check[2]), 0],
                   [np.sin(x_check[2]), 0], 
@@ -105,3 +105,9 @@ F_km = np.array([[1, 0, -np.sin(x_check[2])*(v[k-1])*(delta_t)],
 L_km = np.array([[np.cos(x_check[2])*delta_t, 0],
                     [np.sin(x_check[2])*delta_t, 0],
                     [0, delta_t]])
+
+# 4. Propagating uncertainty
+P_check = np.matmul(F_km, np.matmul(P_check, F_km.T)) + np.matmul(L_km, np.matmul(Q_km, L_km.T))
+
+# 5. Updating state estimate using available landmark measurements
+x_check, P_check = measurement_update(l[i], r[k, i], b[k, i], P_check, x_check)
