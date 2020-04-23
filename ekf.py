@@ -95,3 +95,13 @@ Input = np.array([[v[k-1]], [om[k-1]]])
 w = np.reshape(np.random.multivariate_normal([0, 0], Q_km, 1), Input.shape)
 x_check += np.reshape(delta_t*np.matmul(F, Input), x_check.shape)
 x_check[2] = wraptopi(x_check[2])
+
+# 2. Motion model jacobian with respect to last state
+F_km = np.array([[1, 0, -np.sin(x_check[2])*(v[k-1])*(delta_t)],
+                     [0, 1,  np.cos(x_check[2])*(v[k-1])*(delta_t)],
+                     [0, 0, 1]])
+
+# 3. Motion model jacobian with respect to noise
+L_km = np.array([[np.cos(x_check[2])*delta_t, 0],
+                    [np.sin(x_check[2])*delta_t, 0],
+                    [0, delta_t]])
