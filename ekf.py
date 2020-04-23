@@ -35,3 +35,10 @@ P_est = np.zeros([len(v), 3, 3])  # state covariance matrices
 x_est[0] = np.array([x_init, y_init, th_init]) # initial state
 P_est[0] = np.diag([1, 1, 0.1]) # initial state covariance
 
+
+def wraptopi(x):
+    if x > np.pi:
+        x = x - (np.floor(x / (2 * np.pi)) + 1) * 2 * np.pi
+    elif x < -np.pi:
+        x = x + (np.floor(x / (-2 * np.pi)) + 1) * 2 * np.pi
+    return x
