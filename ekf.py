@@ -71,9 +71,17 @@ def measurement_update(lk, rk, bk, P_check, x_check):
     M = np.eye(2)
 
     # 2. Compute Kalman Gain
+    K = np.matmul(np.matmul(P_check, H.T), np.linalg.inv(np.matmul(H, np.matmul(P_check, H.T))+ 
+                                                  np.matmul(M, np.matmul(cov_y, M.T))))
 
-    # 3. Correct predicted state
+    # 3. Correct predicted state (remember to wrap the angles to [-pi,pi])
+    ym = np.array([rk, wraptopi(bk)])
+    yk = np.reshape(yk, ym.shape)
+    x_check +=  np.matmul(K, ym - yk)
+    x_check[2] = wraptopi(x_check[2])
 
     # 4. Correct covariance
+    I = np.eye(3)
+    P_check = np.matmul(I - np.matmul(K, H), P_check)
 	
     return x_check, P_check
