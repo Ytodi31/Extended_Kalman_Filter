@@ -48,7 +48,7 @@ def wraptopi(x):
 
 def measurement_update(lk, rk, bk, P_check, x_check):
     
-    # 1. Compute measurement Jacobian
+    # 1. Computing measurement Jacobian
     x_check[2] = wraptopi(x_check[2])
     r = np.sqrt((lk[0] - x_check[0] - d*np.cos(x_check[2]))**2 + (lk[1] - x_check[1] - d*np.sin(x_check[2]))**2) 
     phi = np.arctan2(lk[1] - x_check[1] - d*np.sin(x_check[2]), lk[0] - x_check[0] - d*np.cos(x_check[2])) - x_check[2]
@@ -70,18 +70,28 @@ def measurement_update(lk, rk, bk, P_check, x_check):
     H = np.reshape(H, (2,3))
     M = np.eye(2)
 
-    # 2. Compute Kalman Gain
+    # 2. Computing Kalman Gain
     K = np.matmul(np.matmul(P_check, H.T), np.linalg.inv(np.matmul(H, np.matmul(P_check, H.T))+ 
                                                   np.matmul(M, np.matmul(cov_y, M.T))))
 
-    # 3. Correct predicted state (remember to wrap the angles to [-pi,pi])
+    # 3. Correcting predicted state (remember to wrap the angles to [-pi,pi])
     ym = np.array([rk, wraptopi(bk)])
     yk = np.reshape(yk, ym.shape)
     x_check +=  np.matmul(K, ym - yk)
     x_check[2] = wraptopi(x_check[2])
 
-    # 4. Correct covariance
+    # 4. Correcting covariance
     I = np.eye(3)
     P_check = np.matmul(I - np.matmul(K, H), P_check)
 	
     return x_check, P_check
+
+ # 1. Updating state with odometry readings 
+x_check[2] = wraptopi(x_check[2])
+F = np.array([[np.cos(x_check[2]), 0],
+                  [np.sin(x_check[2]), 0], 
+                  [0,1]])
+Input = np.array([[v[k-1]], [om[k-1]]])
+w = np.reshape(np.random.multivariate_normal([0, 0], Q_km, 1), Input.shape)
+x_check += np.reshape(delta_t*np.matmul(F, Input), x_check.shape)
+x_check[2] = wraptopi(x_check[2])
