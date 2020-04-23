@@ -86,28 +86,37 @@ def measurement_update(lk, rk, bk, P_check, x_check):
 	
     return x_check, P_check
 
-# 1. Updating state with odometry readings 
-x_check[2] = wraptopi(x_check[2])
-F = np.array([[np.cos(x_check[2]), 0],
-                  [np.sin(x_check[2]), 0], 
-                  [0,1]])
-Input = np.array([[v[k-1]], [om[k-1]]])
-w = np.reshape(np.random.multivariate_normal([0, 0], Q_km, 1), Input.shape)
-x_check += np.reshape(delta_t*np.matmul(F, Input), x_check.shape)
-x_check[2] = wraptopi(x_check[2])
+x_check = x_est[0, :]
+P_check = P_est[0]
+for k in range(1, len(t)):
+	# 1. Updating state with odometry readings 
+	x_check[2] = wraptopi(x_check[2])
+	F = np.array([[np.cos(x_check[2]), 0],
+		              [np.sin(x_check[2]), 0], 
+		              [0,1]])
+	Input = np.array([[v[k-1]], [om[k-1]]])
+	w = np.reshape(np.random.multivariate_normal([0, 0], Q_km, 1), Input.shape)
+	x_check += np.reshape(delta_t*np.matmul(F, Input), x_check.shape)
+	x_check[2] = wraptopi(x_check[2])
 
-# 2. Motion model jacobian with respect to last state
-F_km = np.array([[1, 0, -np.sin(x_check[2])*(v[k-1])*(delta_t)],
-                     [0, 1,  np.cos(x_check[2])*(v[k-1])*(delta_t)],
-                     [0, 0, 1]])
+	# 2. Motion model jacobian with respect to last state
+	F_km = np.array([[1, 0, -np.sin(x_check[2])*(v[k-1])*(delta_t)],
+		                 [0, 1,  np.cos(x_check[2])*(v[k-1])*(delta_t)],
+		                 [0, 0, 1]])
 
-# 3. Motion model jacobian with respect to noise
-L_km = np.array([[np.cos(x_check[2])*delta_t, 0],
-                    [np.sin(x_check[2])*delta_t, 0],
-                    [0, delta_t]])
+	# 3. Motion model jacobian with respect to noise
+	L_km = np.array([[np.cos(x_check[2])*delta_t, 0],
+		                [np.sin(x_check[2])*delta_t, 0],
+		                [0, delta_t]])
 
-# 4. Propagating uncertainty
-P_check = np.matmul(F_km, np.matmul(P_check, F_km.T)) + np.matmul(L_km, np.matmul(Q_km, L_km.T))
+	# 4. Propagating uncertainty
+	P_check = np.matmul(F_km, np.matmul(P_check, F_km.T)) + np.matmul(L_km, np.matmul(Q_km, L_km.T))
 
-# 5. Updating state estimate using available landmark measurements
-x_check, P_check = measurement_update(l[i], r[k, i], b[k, i], P_check, x_check)
+	# 5. Updating state estimate using available landmark measurements
+	x_check, P_check = measurement_update(l[i], r[k, i], b[k, i], P_check, x_check)
+
+
+	x_est[k, 0] = x_check[0]
+    x_est[k, 1] = x_check[1]
+    x_est[k, 2] = x_check[2]
+    P_est[k, :, :] = P_check
