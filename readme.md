@@ -45,5 +45,12 @@ Uses sensor measurements to correct the pose estimates
 
 ## Results
 
-
 The images below represent the estimated trajectory using the EKF :
+
+<p align="center">
+  <img src="/data/estimated1.png" width="300 height = "150" title="Detection of Obstacle from LiDAR data">
+</p>
+
+<p align="center">
+  <img src="/data/estimated2.png" width="300 height = "150" title="Detection of Obstacle from LiDAR data">
+</p>
